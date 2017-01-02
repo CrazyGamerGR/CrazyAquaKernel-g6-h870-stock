@@ -45,6 +45,10 @@
 #include <soc/qcom/lge/board_lge.h>
 #include <soc/qcom/socinfo.h>
 #include <soc/qcom/smem.h>
+
+#ifdef CONFIG_PVS_LEVEL_INTERFACE
+static char pvs_level[20] = {0};
+module_param_string(pvs_level, pvs_level, ARRAY_SIZE(pvs_level), S_IRUGO); 
 #endif
 
 enum {
@@ -1358,6 +1362,7 @@ static int cpu_clock_8996_driver_probe(struct platform_device *pdev)
 
 	snprintf(perfclspeedbinstr, ARRAY_SIZE(perfclspeedbinstr),
 			"qcom,perfcl-speedbin%d-v%d", perfclspeedbin, pvs_ver);
+
 #ifdef CONFIG_LGE_PM
 	_socinfo = smem_get_entry(SMEM_HW_SW_BUILD_ID, &size, 0, SMEM_ANY_HOST_FLAG);
 
@@ -1374,6 +1379,11 @@ static int cpu_clock_8996_driver_probe(struct platform_device *pdev)
 	}
 	pr_err("%s\n", perfclspeedbinstr);
 #endif
+
+#ifdef CONFIG_PVS_LEVEL_INTERFACE
+	snprintf(pvs_level, ARRAY_SIZE(pvs_level), "%d-v%d", perfclspeedbin, pvs_ver);
+#endif
+
 	ret = of_get_fmax_vdd_class(pdev, &perfcl_clk.c, perfclspeedbinstr);
 	if (ret) {
 		dev_err(&pdev->dev, "Can't get speed bin for perfcl. Falling back to zero.\n");
